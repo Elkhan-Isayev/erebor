@@ -1,0 +1,400 @@
+---
+import { Image } from 'astro:assets';
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Station from '../Station.astro';
+import VoyageMap from '../VoyageMap.astro';
+import EmberTrail from '../EmberTrail.astro';
+import { anchorPath, localePath, type Locale } from '../../i18n/config';
+import { listStations, sagaSlug, stationAnchor } from '../../i18n/content';
+import { t } from '../../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  saga: CollectionEntry<'sagas'>;
+}
+
+const { locale, saga } = Astro.props;
+const ui = t(locale);
+const { Content } = await render(saga);
+
+const slug = sagaSlug(saga);
+const stations = await listStations(locale, slug);
+---
+
+<Base
+  locale={locale}
+  path={`/sagas/${slug}`}
+  title={`${saga.data.title} — EREBOR`}
+  description={ui.meta.sagaDescription(saga.data.tagline + '.', stations.length)}
+  transparentHeader
+>
+  <div class="progress" aria-hidden="true"><i data-progress></i></div>
+
+  <!-- ── Saga title card ────────────────────────────────── -->
+  <header class="saga-hero">
+    {
+      saga.data.cover && (
+        <Image
+          class="saga-hero__bg"
+          src={saga.data.cover}
+          alt=""
+          widths={[720, 1280, 1920, 2400]}
+          sizes="100vw"
+          loading="eager"
+          quality={74}
+        />
+      )
+    }
+    <div class="saga-hero__scrim" aria-hidden="true"></div>
+
+    <div class="saga-hero__inner wrap">
+      <p class="saga-hero__greek greek">{saga.data.greek}</p>
+      <h1 class="display saga-hero__title">{saga.data.title}</h1>
+      <p class="saga-hero__tagline">{saga.data.tagline}</p>
+
+      <dl class="saga-hero__meta">
+        <div><dt>{ui.saga.author}</dt><dd>{saga.data.author}</dd></div>
+        <div><dt>{ui.saga.era}</dt><dd>{saga.data.era}</dd></div>
+        <div><dt>{ui.saga.stations}</dt><dd>{stations.length}</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <!-- ── Introduction and table of contents ─────────────── -->
+  <section class="intro">
+    <div class="wrap intro__grid">
+      <div class="intro__text prose" data-reveal>
+        <Content />
+      </div>
+
+      <nav class="route" aria-label={ui.saga.routeAria} data-reveal style="--reveal-delay: 120ms">
+        <p class="eyebrow route__label">{ui.saga.route}</p>
+        <ol class="route__list">
+          {
+            stations.map((station) => (
+              <li>
+                <a href={`#${stationAnchor(station)}`}>
+                  <span class="route__num numeral">{station.data.numeral}</span>
+                  <span class="route__name">{station.data.title}</span>
+                  <span class="route__place">{station.data.place}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="route__note">{ui.map.note}</p>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ── Stations, over the pinned voyage chart ─────────── -->
+  <VoyageMap locale={locale} target=".stations" />
+  <EmberTrail target=".stations" />
+
+  <div class="stations">
+    {stations.map((station) => <Station station={station} anchor={stationAnchor(station)} />)}
+  </div>
+
+  <!-- ── Close ──────────────────────────────────────────── -->
+  <section class="end">
+    <div class="wrap">
+      <div class="ornament" aria-hidden="true"><span></span></div>
+      <p class="end__greek greek" data-reveal>ΤΕΛΟΣ</p>
+      <p class="end__text" data-reveal style="--reveal-delay: 100ms">{ui.saga.endText}</p>
+      <a
+        class="end__cta"
+        href={anchorPath(locale, 'sagas')}
+        data-reveal
+        style="--reveal-delay: 200ms"
+      >
+        <span>{ui.saga.endCta}</span>
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+          <path d="M4 12h16m0 0l-6-6m6 6l-6 6" fill="none" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <script>
+    // Reading progress along the top of the page.
+    const bar = document.querySelector<HTMLElement>('[data-progress]');
+    if (bar) {
+      let ticking = false;
+      const update = () => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        bar.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
+        ticking = false;
+      };
+      addEventListener(
+        'scroll',
+        () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(update);
+        },
+        { passive: true }
+      );
+      update();
+    }
+  </script>
+</Base>
+
+<style>
+  /* ── Progress bar ───────────────────────────────────────── */
+
+  .progress {
+    position: fixed;
+    inset: 0 0 auto;
+    height: 2px;
+    z-index: 85;
+    background: transparent;
+  }
+
+  .progress i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-deep), var(--flame));
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  /* ── Title card ─────────────────────────────────────────── */
+
+  .saga-hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    align-items: end;
+    overflow: hidden;
+    background: var(--pitch);
+  }
+
+  .saga-hero__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.06);
+  }
+
+  .saga-hero__scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 100% 80% at 50% 40%, transparent 25%, rgba(5, 4, 8, 0.7) 100%),
+      linear-gradient(180deg, rgba(5, 4, 8, 0.85) 0%, transparent 34%, rgba(5, 4, 8, 0.96) 100%);
+  }
+
+  .saga-hero__inner {
+    position: relative;
+    padding-block: clamp(4rem, 14vh, 8rem);
+  }
+
+  .saga-hero__greek {
+    margin: 0 0 0.9rem;
+    font-size: clamp(0.85rem, 0.7rem + 0.7vw, 1.2rem);
+    letter-spacing: 0.46em;
+    color: var(--gold);
+  }
+
+  .saga-hero__title {
+    font-size: var(--step-5);
+    color: var(--bone);
+    text-shadow: 0 0.12em 1em rgba(0, 0, 0, 0.75);
+  }
+
+  .saga-hero__tagline {
+    margin: 1.25rem 0 0;
+    font-size: var(--step-1);
+    font-style: italic;
+    color: var(--bone-dim);
+    max-width: 32ch;
+  }
+
+  .saga-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1.5rem, 5vw, 4rem);
+    margin: clamp(2rem, 6vh, 3.5rem) 0 0;
+    padding-top: clamp(1.25rem, 3vh, 2rem);
+    border-top: 1px solid var(--rule);
+    max-width: 48rem;
+  }
+
+  .saga-hero__meta dt {
+    font-family: var(--font-micro);
+    font-size: 0.62rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--bone-faint);
+    margin-bottom: 0.4rem;
+  }
+
+  :lang(ar) .saga-hero__meta dt {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.78rem;
+  }
+
+  .saga-hero__meta dd {
+    margin: 0;
+    font-size: var(--step-0);
+    color: var(--bone);
+  }
+
+  /* ── Introduction and route ─────────────────────────────── */
+
+  section {
+    position: relative;
+    z-index: 2;
+    background: var(--void);
+  }
+
+  .intro {
+    padding-block: clamp(3.5rem, 11vh, 7rem);
+  }
+
+  .intro__grid {
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  @media (min-width: 58rem) {
+    .intro__grid {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .intro__text {
+    max-width: 42rem;
+    font-size: var(--step-1);
+    line-height: 1.6;
+  }
+
+  .route__label {
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .route__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .route__list a {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0 0.75rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    transition: color 0.35s var(--ease);
+  }
+
+  .route__list a:hover {
+    color: var(--gold);
+  }
+
+  .route__num {
+    font-size: 0.8rem;
+    color: var(--gold-deep);
+  }
+
+  .route__name {
+    font-size: var(--step-0);
+    color: inherit;
+  }
+
+  .route__place {
+    grid-column: 2;
+    font-family: var(--font-micro);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--bone-faint);
+  }
+
+  :lang(ar) .route__place {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.78rem;
+  }
+
+  /* Said once here rather than floating over the chart itself. */
+  .route__note {
+    margin: 1.5rem 0 0;
+    font-family: var(--font-micro);
+    font-size: 0.66rem;
+    line-height: 1.7;
+    color: var(--bone-faint);
+  }
+
+  /* ── Stations and close ─────────────────────────────────── */
+
+  /* No background: the voyage chart shows through the station panels. */
+  .stations {
+    position: relative;
+    z-index: 1;
+  }
+
+  .end {
+    padding-block: clamp(3rem, 9vh, 6rem) clamp(4rem, 14vh, 9rem);
+    text-align: center;
+  }
+
+  .end__greek {
+    margin: clamp(2.5rem, 8vh, 4rem) 0 1.5rem;
+    font-size: 1rem;
+    letter-spacing: 0.5em;
+    text-indent: 0.5em;
+    color: var(--gold);
+  }
+
+  .end__text {
+    margin: 0 auto;
+    max-width: 38rem;
+    font-size: var(--step-1);
+    font-style: italic;
+    color: var(--bone-dim);
+    text-wrap: balance;
+  }
+
+  .end__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: clamp(2rem, 5vh, 3rem);
+    padding: 0.9rem 2rem;
+    border: 1px solid var(--rule);
+    color: var(--gold);
+    font-family: var(--font-micro);
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    transition:
+      background 0.4s var(--ease),
+      border-color 0.4s var(--ease),
+      color 0.4s var(--ease);
+  }
+
+  :lang(ar) .end__cta {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.88rem;
+  }
+
+  [dir='rtl'] .end__cta svg {
+    scale: -1 1;
+  }
+
+  .end__cta:hover {
+    background: color-mix(in srgb, var(--gold) 12%, transparent);
+    border-color: var(--gold);
+    color: var(--bone);
+  }
+</style>

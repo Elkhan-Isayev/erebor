@@ -1,0 +1,15 @@
+---
+import HomePage from '../../components/pages/HomePage.astro';
+import { DEFAULT_LOCALE, LOCALES, type Locale } from '../../i18n/config';
+
+export function getStaticPaths() {
+  // English lives at the root, so only the prefixed locales are built here.
+  return LOCALES.filter((lang) => lang !== DEFAULT_LOCALE).map((lang) => ({
+    params: { lang },
+  }));
+}
+
+const locale = Astro.params.lang as Locale;
+---
+
+<HomePage locale={locale} />

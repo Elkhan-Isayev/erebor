@@ -1,0 +1,26 @@
+---
+import SagaPage from '../../../components/pages/SagaPage.astro';
+import { DEFAULT_LOCALE, LOCALES, type Locale } from '../../../i18n/config';
+import { listSagas, sagaSlug } from '../../../i18n/content';
+
+export async function getStaticPaths() {
+  const paths = [];
+
+  for (const lang of LOCALES) {
+    if (lang === DEFAULT_LOCALE) continue;
+
+    // listSagas falls back to English, so a locale still gets every saga
+    // even before its own translation exists.
+    for (const saga of await listSagas(lang)) {
+      if (!saga.data.published) continue;
+      paths.push({ params: { lang, slug: sagaSlug(saga) }, props: { saga } });
+    }
+  }
+  return paths;
+}
+
+const locale = Astro.params.lang as Locale;
+const { saga } = Astro.props;
+---
+
+<SagaPage locale={locale} saga={saga} />

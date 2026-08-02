@@ -1,0 +1,569 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import ScrollDescent from '../ScrollDescent.astro';
+import { localePath, type Locale } from '../../i18n/config';
+import { listSagas, listStations, sagaSlug } from '../../i18n/content';
+import { TRADITIONS, TRADITION_TEXT } from '../../i18n/traditions';
+import { t } from '../../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const ui = t(locale);
+const sagas = await listSagas(locale);
+
+// Station counts are only needed for published sagas.
+const counts = new Map<string, number>();
+for (const saga of sagas) {
+  if (!saga.data.published) continue;
+  const slug = sagaSlug(saga);
+  counts.set(slug, (await listStations(locale, slug)).length);
+}
+
+const home = localePath(locale, '/');
+---
+
+<Base
+  locale={locale}
+  path="/"
+  title={ui.meta.homeTitle}
+  description={ui.meta.homeDescription}
+  transparentHeader
+>
+  <ScrollDescent locale={locale} href={localePath(locale, '/sagas/odysseia')} />
+
+  <!-- ── About ─────────────────────────────────────────── -->
+  <section class="manifesto" id="about">
+    <div class="wrap">
+      <div class="ornament" aria-hidden="true"><span></span></div>
+
+      <div class="manifesto__head" data-reveal>
+        <p class="eyebrow">{ui.about.eyebrow}</p>
+        <h2 class="display manifesto__title">
+          {ui.about.titleLines[0]}<br />{ui.about.titleLines[1]}<br />{ui.about.titleLines[2]}
+        </h2>
+      </div>
+
+      <div class="manifesto__body prose" data-reveal style="--reveal-delay: 120ms">
+        <p set:html={ui.about.p1.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')} />
+        <p set:html={ui.about.p2.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')} />
+      </div>
+
+      <ul class="principles">
+        {
+          ui.about.principles.map((item, i) => (
+            <li class="principle" data-reveal style={`--reveal-delay: ${i * 110}ms`}>
+              <p class="principle__greek greek">{item.greek}</p>
+              <h3 class="principle__title">{item.title}</h3>
+              <p class="principle__text">{item.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── Catalogue ─────────────────────────────────────── -->
+  <section class="catalogue" id="sagas">
+    <div class="wrap">
+      <div class="catalogue__head" data-reveal>
+        <p class="eyebrow">{ui.catalogue.eyebrow}</p>
+        <h2 class="display catalogue__title">{ui.catalogue.traditions}</h2>
+        <p class="catalogue__note">{ui.catalogue.pilot}</p>
+      </div>
+
+      <!-- Traditions are tabs, not a stack: every one carries the same weight,
+           so the catalogue does not read as a ranking. -->
+      <div class="tabs" data-tabs data-reveal>
+        <div class="tabs__list" role="tablist" aria-label={ui.catalogue.traditions}>
+          {
+            TRADITIONS.map((tradition, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`tab-${tradition.id}`}
+                aria-controls={`panel-${tradition.id}`}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                tabindex={i === 0 ? 0 : -1}
+                class="tab"
+                data-tab
+              >
+                <span class="tab__mark" aria-hidden="true">
+                  {tradition.mark}
+                </span>
+                <span class="tab__name">{TRADITION_TEXT[locale][tradition.id].name}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      {
+        TRADITIONS.map((tradition, index) => {
+          const text = TRADITION_TEXT[locale][tradition.id];
+          const items = sagas.filter((saga) => saga.data.tradition === tradition.id);
+
+          return (
+            <div
+              class="panel"
+              role="tabpanel"
+              id={`panel-${tradition.id}`}
+              aria-labelledby={`tab-${tradition.id}`}
+              hidden={index !== 0}
+              data-panel
+            >
+              <div class="panel__head">
+                <p class="panel__era">{text.era}</p>
+                <p class="panel__note">{text.note}</p>
+                {!tradition.published && <p class="panel__soon">{ui.catalogue.soon}</p>}
+              </div>
+
+              {tradition.published && (
+                <ol class="grid">
+                  {items.map((saga, i) => {
+                    const slug = sagaSlug(saga);
+                    const Card = saga.data.published ? 'a' : 'div';
+
+                    return (
+                      <li>
+                        <Card
+                          class:list={['card', { 'card--soon': !saga.data.published }]}
+                          href={
+                            saga.data.published
+                              ? localePath(locale, `/sagas/${slug}`)
+                              : undefined
+                          }
+                          style={`--accent: ${saga.data.accent}`}
+                        >
+                          <div class="card__art">
+                            {saga.data.cover ? (
+                              <Image
+                                src={saga.data.cover}
+                                alt=""
+                                widths={[480, 800, 1200]}
+                                sizes="(min-width: 62rem) 24rem, (min-width: 40rem) 45vw, 90vw"
+                                loading={i === 0 ? 'eager' : 'lazy'}
+                                quality={70}
+                              />
+                            ) : (
+                              <span class="card__void" aria-hidden="true" />
+                            )}
+                          </div>
+
+                          <div class="card__body">
+                            <p class="card__greek greek">{saga.data.greek}</p>
+                            <h3 class="card__title display">{saga.data.title}</h3>
+                            <p class="card__tagline">{saga.data.tagline}</p>
+
+                            <p class="card__meta">
+                              <span>{saga.data.author}</span>
+                              <span>{saga.data.era}</span>
+                            </p>
+
+                            <p class="card__status">
+                              {saga.data.published
+                                ? ui.catalogue.read(counts.get(slug) ?? 0)
+                                : ui.catalogue.soon}
+                            </p>
+                          </div>
+                        </Card>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </div>
+          );
+        })
+      }
+    </div>
+  </section>
+  <script>
+    // Tradition tabs. Server-rendered with the first panel open, so the
+    // catalogue is readable before this runs.
+    const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const panels = [...document.querySelectorAll<HTMLElement>('[data-panel]')];
+
+    function select(index: number) {
+      tabs.forEach((tab, i) => {
+        const on = i === index;
+        tab.setAttribute('aria-selected', String(on));
+        tab.tabIndex = on ? 0 : -1;
+        if (panels[i]) panels[i].hidden = !on;
+      });
+    }
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(i));
+
+      tab.addEventListener('keydown', (event) => {
+        const last = tabs.length - 1;
+        const rtl = document.documentElement.dir === 'rtl';
+        const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
+        const back = rtl ? 'ArrowRight' : 'ArrowLeft';
+
+        let next: number | null = null;
+        if (event.key === forward) next = i === last ? 0 : i + 1;
+        else if (event.key === back) next = i === 0 ? last : i - 1;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = last;
+
+        if (next === null) return;
+        event.preventDefault();
+        select(next);
+        tabs[next].focus();
+      });
+    });
+  </script>
+</Base>
+
+<style>
+  section {
+    position: relative;
+    z-index: 2;
+    background: var(--void);
+  }
+
+  /* ── About ──────────────────────────────────────────────── */
+
+  .manifesto {
+    padding-block: clamp(4rem, 12vh, 9rem) clamp(3rem, 9vh, 6rem);
+  }
+
+  .manifesto__head {
+    margin-block: clamp(3rem, 9vh, 6rem) clamp(1.75rem, 5vh, 3rem);
+  }
+
+  .manifesto__title {
+    margin-top: 1.25rem;
+    font-size: var(--step-3);
+    color: var(--bone);
+  }
+
+  .manifesto__body {
+    max-width: 40rem;
+    font-size: var(--step-1);
+    line-height: 1.62;
+  }
+
+  .principles {
+    display: grid;
+    gap: clamp(2rem, 4vw, 3rem);
+    margin: clamp(3.5rem, 10vh, 6rem) 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--rule-soft);
+    padding-top: clamp(2rem, 5vh, 3.25rem);
+  }
+
+  @media (min-width: 48rem) {
+    .principles {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .principle__greek {
+    margin: 0 0 0.75rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.36em;
+  }
+
+  .principle__title {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--step-1);
+    color: var(--bone);
+  }
+
+  .principle__text {
+    margin: 0;
+    color: var(--bone-dim);
+    font-size: var(--step--1);
+    max-width: 32ch;
+  }
+
+  /* ── Catalogue ──────────────────────────────────────────── */
+
+  .catalogue {
+    padding-block: clamp(3rem, 9vh, 6rem) clamp(4rem, 12vh, 8rem);
+  }
+
+  .catalogue__head {
+    margin-bottom: clamp(2.5rem, 7vh, 4rem);
+  }
+
+  .catalogue__title {
+    margin-top: 1rem;
+    font-size: var(--step-3);
+  }
+
+  .catalogue__note {
+    margin: 1rem 0 0;
+    max-width: 38rem;
+    color: var(--bone-dim);
+    font-size: var(--step--1);
+  }
+
+  /* ── Traditions as tabs ─────────────────────────────────── */
+
+  .tabs {
+    margin-bottom: clamp(1.75rem, 5vh, 3rem);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .tabs__list {
+    display: flex;
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Every tab is styled identically — nothing here implies an order. */
+  .tab {
+    flex: none;
+    display: grid;
+    justify-items: start;
+    gap: 0.3rem;
+    padding: 0 0 clamp(0.9rem, 2vh, 1.25rem);
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+    text-align: start;
+    transition:
+      color 0.35s var(--ease),
+      border-color 0.35s var(--ease);
+  }
+
+  .tab__mark {
+    font-family: 'EB Garamond Variable', Georgia, serif;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    letter-spacing: 0.14em;
+    color: var(--gold-deep);
+    transition: color 0.35s var(--ease);
+  }
+
+  .tab__name {
+    font-family: var(--font-serif);
+    font-size: var(--step-0);
+    white-space: nowrap;
+    color: var(--bone-faint);
+    transition: color 0.35s var(--ease);
+  }
+
+  .tab:hover .tab__name {
+    color: var(--bone-dim);
+  }
+
+  .tab[aria-selected='true'] {
+    border-bottom-color: var(--gold);
+  }
+
+  .tab[aria-selected='true'] .tab__name {
+    color: var(--bone);
+  }
+
+  .tab[aria-selected='true'] .tab__mark {
+    color: var(--gold);
+  }
+
+  .panel[hidden] {
+    display: none;
+  }
+
+  .panel__head {
+    margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+  }
+
+  .panel__era {
+    margin: 0;
+    font-family: var(--font-micro);
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--bone-faint);
+  }
+
+  .panel__note {
+    margin: 0.75rem 0 0;
+    max-width: 46ch;
+    font-size: var(--step--1);
+    font-style: italic;
+    color: var(--bone-dim);
+  }
+
+  .panel__soon {
+    margin: 1.25rem 0 0;
+    font-family: var(--font-micro);
+    font-size: 0.64rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+  }
+
+  :lang(ar) .panel__era,
+  :lang(ar) .panel__soon {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.8rem;
+  }
+
+  .grid {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.25rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 40rem) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    border: 1px solid var(--rule-soft);
+    background: linear-gradient(180deg, var(--stone), var(--pitch));
+    overflow: hidden;
+    transition:
+      border-color 0.5s var(--ease),
+      transform 0.5s var(--ease-out),
+      background 0.5s var(--ease);
+  }
+
+  a.card:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    transform: translateY(-4px);
+  }
+
+  .card__art {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--pitch);
+  }
+
+  .card__art :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.86) brightness(0.82);
+    transition:
+      transform 0.9s var(--ease-out),
+      filter 0.6s var(--ease);
+  }
+
+  a.card:hover .card__art :global(img) {
+    transform: scale(1.05);
+    filter: saturate(1) brightness(0.95);
+  }
+
+  /* A saga not yet written — an empty dark frame with a single line. */
+  .card__void {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        ellipse 70% 60% at 50% 120%,
+        color-mix(in srgb, var(--accent) 22%, transparent),
+        transparent 70%
+      ),
+      var(--pitch);
+  }
+
+  .card__void::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 1px;
+    height: 45%;
+    translate: -50% 0;
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 60%, transparent));
+  }
+
+  .card__body {
+    display: grid;
+    align-content: start;
+    gap: 0.55rem;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  }
+
+  .card__greek {
+    margin: 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    color: color-mix(in srgb, var(--accent) 85%, var(--bone));
+  }
+
+  .card__title {
+    margin: 0;
+    font-size: var(--step-1);
+    color: var(--bone);
+  }
+
+  .card__tagline {
+    margin: 0;
+    color: var(--bone-dim);
+    font-size: var(--step--1);
+    font-style: italic;
+  }
+
+  .card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin: 0.5rem 0 0;
+    font-family: var(--font-micro);
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bone-faint);
+  }
+
+  .card__status {
+    margin: 0.9rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--rule-soft);
+    font-family: var(--font-micro);
+    font-size: 0.64rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  :lang(ar) .card__meta,
+  :lang(ar) .card__status {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.78rem;
+  }
+
+  .card--soon {
+    opacity: 0.66;
+  }
+
+  .card--soon .card__status {
+    color: var(--bone-faint);
+  }
+</style>

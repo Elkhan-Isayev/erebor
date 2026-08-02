@@ -1,0 +1,17 @@
+---
+import SagaPage from '../../components/pages/SagaPage.astro';
+import { DEFAULT_LOCALE } from '../../i18n/config';
+import { listSagas, sagaSlug } from '../../i18n/content';
+
+export async function getStaticPaths() {
+  const sagas = await listSagas(DEFAULT_LOCALE);
+
+  return sagas
+    .filter((saga) => saga.data.published)
+    .map((saga) => ({ params: { slug: sagaSlug(saga) }, props: { saga } }));
+}
+
+const { saga } = Astro.props;
+---
+
+<SagaPage locale={DEFAULT_LOCALE} saga={saga} />

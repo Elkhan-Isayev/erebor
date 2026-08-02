@@ -1,0 +1,147 @@
+---
+import { LOCALES, LOCALE_META, localePath, type Locale } from '../i18n/config';
+import { t } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  /** Logical path without the locale prefix, so the switch stays on this page. */
+  path: string;
+}
+
+const { locale, path } = Astro.props;
+const ui = t(locale);
+---
+
+<details class="lang" data-lang>
+  <summary aria-label={ui.lang.aria}>
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18" />
+    </svg>
+    <span>{LOCALE_META[locale].name}</span>
+  </summary>
+
+  <ul>
+    {
+      LOCALES.map((code) => (
+        <li>
+          <a
+            href={localePath(code, path)}
+            hreflang={LOCALE_META[code].tag}
+            lang={LOCALE_META[code].tag}
+            dir={LOCALE_META[code].dir}
+            aria-current={code === locale ? 'true' : undefined}
+          >
+            {LOCALE_META[code].name}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</details>
+
+<script>
+  // Close the menu on outside click or Escape — <details> does neither alone.
+  const box = document.querySelector<HTMLDetailsElement>('[data-lang]');
+
+  if (box) {
+    addEventListener('click', (event) => {
+      if (box.open && !box.contains(event.target as Node)) box.open = false;
+    });
+
+    addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && box.open) {
+        box.open = false;
+        box.querySelector('summary')?.focus();
+      }
+    });
+  }
+</script>
+
+<style>
+  .lang {
+    position: relative;
+  }
+
+  summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0;
+    list-style: none;
+    cursor: pointer;
+    font-family: var(--font-micro);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+    border-bottom: 1px solid transparent;
+    transition:
+      color 0.35s var(--ease),
+      border-color 0.35s var(--ease);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary:hover,
+  [open] summary {
+    color: var(--gold);
+    border-bottom-color: var(--rule);
+  }
+
+  summary svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.3;
+    flex: none;
+  }
+
+  :lang(ar) summary span {
+    letter-spacing: 0;
+  }
+
+  ul {
+    position: absolute;
+    inset-block-start: calc(100% + 0.75rem);
+    inset-inline-end: 0;
+    z-index: 20;
+
+    min-width: 11rem;
+    margin: 0;
+    padding: 0.4rem;
+    list-style: none;
+
+    border: 1px solid var(--rule-soft);
+    background: color-mix(in srgb, var(--void) 94%, transparent);
+    backdrop-filter: blur(14px);
+  }
+
+  ul a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    color: var(--bone-dim);
+    transition:
+      color 0.3s var(--ease),
+      background 0.3s var(--ease);
+  }
+
+  ul a:hover {
+    color: var(--bone);
+    background: color-mix(in srgb, var(--gold) 10%, transparent);
+  }
+
+  ul a[aria-current='true'] {
+    color: var(--gold);
+  }
+
+  @media (max-width: 40rem) {
+    summary span {
+      display: none;
+    }
+  }
+</style>

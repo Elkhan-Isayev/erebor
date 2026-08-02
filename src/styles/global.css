@@ -1,0 +1,326 @@
+@import '@fontsource-variable/eb-garamond';
+@import '@fontsource/forum';
+@import '@fontsource/amiri';
+
+/* ─────────────────────────────────────────────────────────────
+   EREBOR — design system
+   The palette is taken from black-figure pottery and torchlight:
+   obsidian, bronze, terracotta, bone.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --void: #07060a;
+  --pitch: #0b0a10;
+  --stone: #131119;
+  --ash: #211d29;
+
+  --bone: #ece5d7;
+  --bone-dim: #a59b89;
+  --bone-faint: #6d6559;
+
+  --gold: #d3ae63;
+  --gold-deep: #8c6f34;
+  --terra: #b4472e;
+  --flame: #ff9440;
+  --aegean: #1d3850;
+
+  --rule: color-mix(in srgb, var(--gold) 22%, transparent);
+  --rule-soft: color-mix(in srgb, var(--gold) 10%, transparent);
+
+  /* EB Garamond covers Latin, Greek and Cyrillic; Forum covers Latin and
+     Cyrillic only, so Greek headings fall through to EB Garamond. */
+  --font-display: 'Forum', 'EB Garamond Variable', Georgia, serif;
+  --font-serif: 'EB Garamond Variable', 'EB Garamond', Georgia, serif;
+  --font-micro: ui-sans-serif, -apple-system, 'Segoe UI', system-ui, sans-serif;
+
+  /* Fluid type scale, 360px to 1600px */
+  --step--1: clamp(0.94rem, 0.9rem + 0.2vw, 1.06rem);
+  --step-0: clamp(1.06rem, 1rem + 0.3vw, 1.25rem);
+  --step-1: clamp(1.3rem, 1.15rem + 0.6vw, 1.75rem);
+  --step-2: clamp(1.6rem, 1.3rem + 1.3vw, 2.6rem);
+  --step-3: clamp(2rem, 1.4rem + 2.6vw, 4rem);
+  --step-4: clamp(2.6rem, 1.4rem + 5vw, 6.5rem);
+  --step-5: clamp(3.2rem, 1rem + 9vw, 10rem);
+
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+  --measure: 34rem;
+  --page: 78rem;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  color-scheme: dark;
+}
+
+/* Neither EB Garamond nor Forum carries Arabic, so Arabic switches to Amiri —
+   a Naskh face whose classical feel matches the rest of the design. */
+:root:lang(ar) {
+  --font-display: 'Amiri', 'EB Garamond Variable', Georgia, serif;
+  --font-serif: 'Amiri', 'EB Garamond Variable', Georgia, serif;
+  /* Arabic sits lower and needs more leading than the Latin scale assumes. */
+  --step-0: clamp(1.1rem, 1rem + 0.4vw, 1.3rem);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--bone);
+  font-family: var(--font-serif);
+  font-size: var(--step-0);
+  line-height: 1.68;
+  font-variant-ligatures: common-ligatures;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body:lang(ar) {
+  line-height: 1.9;
+}
+
+img,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--terra) 60%, transparent);
+  color: var(--bone);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+
+/* ── Film grain and vignette over the whole page ───────────── */
+
+.grain,
+.vignette {
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 90;
+}
+
+.grain {
+  opacity: 0.32;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  animation: grain-shift 700ms steps(1) infinite;
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 1%); }
+  50% { transform: translate(1%, -2%); }
+  75% { transform: translate(-1%, -1%); }
+  100% { transform: translate(2%, 2%); }
+}
+
+.vignette {
+  inset: 0;
+  background: radial-gradient(
+    ellipse 120% 100% at 50% 45%,
+    transparent 40%,
+    color-mix(in srgb, var(--void) 80%, transparent) 100%
+  );
+  z-index: 89;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain {
+    animation: none;
+  }
+}
+
+/* ── Layout ────────────────────────────────────────────────── */
+
+.wrap {
+  width: min(100% - var(--gutter) * 2, var(--page));
+  margin-inline: auto;
+}
+
+.prose {
+  max-width: var(--measure);
+}
+
+.prose p {
+  margin: 0 0 1.35em;
+  color: color-mix(in srgb, var(--bone) 88%, var(--bone-dim));
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+.prose p strong,
+.prose strong {
+  color: var(--bone);
+  font-weight: 600;
+}
+
+.prose em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+/* ── Typographic primitives ────────────────────────────────── */
+
+.eyebrow {
+  font-family: var(--font-micro);
+  font-size: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0;
+}
+
+/* Arabic has no case and letterspacing breaks its joins. */
+:lang(ar) .eyebrow,
+:lang(ar) .numeral {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.greek {
+  font-family: 'EB Garamond Variable', 'EB Garamond', Georgia, serif;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  color: var(--gold-deep);
+}
+
+/* The wordmark stays Latin in every locale, so it keeps its own face rather
+   than following --font-serif into Amiri on the Arabic pages. */
+.wordmark {
+  font-family: 'EB Garamond Variable', 'EB Garamond', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: var(--gold);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+:lang(ar) .display {
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.numeral {
+  font-family: var(--font-serif);
+  font-variant-numeric: oldstyle-nums;
+  letter-spacing: 0.24em;
+  color: var(--gold-deep);
+}
+
+/* ── Ornaments ─────────────────────────────────────────────── */
+
+.rule {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rule), transparent);
+  margin: 0;
+}
+
+/* A hairline with a meander in the middle — the section divider. */
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+}
+
+.ornament::before,
+.ornament::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rule));
+}
+
+.ornament::after {
+  background: linear-gradient(90deg, var(--rule), transparent);
+}
+
+.ornament span {
+  flex: none;
+  width: 72px;
+  height: 16px;
+  opacity: 0.7;
+  background-repeat: repeat-x;
+  background-position: center;
+  background-size: 24px 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='16' viewBox='0 0 24 16'%3E%3Cpath d='M0 15h24M3 15V3h18v9h-12v-6h6v3' fill='none' stroke='%23d3ae63' stroke-width='1.3' stroke-linecap='square'/%3E%3C/svg%3E");
+}
+
+/* ── Scroll reveal ─────────────────────────────────────────── */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(1.75rem);
+  transition:
+    opacity 1.1s var(--ease-out),
+    transform 1.1s var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Right-to-left ─────────────────────────────────────────── */
+
+/* Most of the layout uses logical properties already; these are the few
+   places that are genuinely direction-bound. */
+[dir='rtl'] .progress i {
+  transform-origin: right;
+}
+
+[dir='rtl'] .ornament::before {
+  background: linear-gradient(90deg, var(--rule), transparent);
+}
+
+[dir='rtl'] .ornament::after {
+  background: linear-gradient(90deg, transparent, var(--rule));
+}

@@ -1,0 +1,188 @@
+---
+/**
+ * The thread that ties the scenes together.
+ *
+ * A fixed canvas of drifting embers sits above the scenes and the text, so
+ * nothing ever cuts hard from one station to the next: the same sparks that
+ * were over the burning Troy travel down with the reader and are still there
+ * when the next scene arrives.
+ *
+ * Their fall is driven by scroll delta — scrolling down accelerates them
+ * downward, which is what makes them read as carried along rather than as
+ * decoration playing on its own.
+ */
+
+interface Props {
+  /** Selector of the block the trail should be alive over. */
+  target: string;
+}
+
+const { target } = Astro.props;
+---
+
+<canvas class="embers" data-embers data-target={target} aria-hidden="true"></canvas>
+
+<style>
+  .embers {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.4s var(--ease);
+  }
+
+  .embers.is-live {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .embers {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  interface Ember {
+    x: number;
+    y: number;
+    /** Base fall speed, px per second. */
+    vy: number;
+    vx: number;
+    radius: number;
+    life: number;
+    maxLife: number;
+    /** 0 = deep ember, 1 = bright spark. */
+    heat: number;
+  }
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-embers]');
+  const container = canvas ? document.querySelector<HTMLElement>(canvas.dataset.target!) : null;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (canvas && container && !reduced) {
+    const ctx = canvas.getContext('2d')!;
+    const MAX = 70;
+    const embers: Ember[] = [];
+
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let live = false;
+    let frame = 0;
+
+    /** Scroll delta carried between frames, decaying — this is the "pull". */
+    let pull = 0;
+    let lastScroll = window.scrollY;
+    let lastTime = performance.now();
+
+    function resize() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function spawn(atTop: boolean): Ember {
+      const maxLife = 6 + Math.random() * 7;
+      return {
+        x: Math.random() * width,
+        y: atTop ? -20 - Math.random() * height * 0.3 : Math.random() * height,
+        vy: 8 + Math.random() * 22,
+        vx: (Math.random() - 0.5) * 10,
+        radius: 0.7 + Math.random() * 1.9,
+        life: atTop ? 0 : Math.random() * maxLife,
+        maxLife,
+        heat: Math.random(),
+      };
+    }
+
+    function step(now: number) {
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+
+      // Scroll delta since the last frame feeds the downward pull and decays,
+      // so the embers keep coasting for a moment after the scroll stops.
+      const delta = window.scrollY - lastScroll;
+      lastScroll = window.scrollY;
+      pull = pull * 0.9 + delta * 0.9;
+
+      ctx.clearRect(0, 0, width, height);
+
+      if (embers.length < MAX) embers.push(spawn(embers.length > 8));
+
+      for (let i = embers.length - 1; i >= 0; i--) {
+        const e = embers[i];
+
+        e.life += dt;
+        e.y += e.vy * dt + pull * 0.035;
+        e.x += e.vx * dt + Math.sin((e.life + e.x) * 0.6) * 0.25;
+
+        const t = e.life / e.maxLife;
+        if (t >= 1 || e.y > height + 40 || e.y < -height) {
+          embers[i] = spawn(true);
+          continue;
+        }
+
+        // Fade in over the first fifth of life, out over the last third.
+        const alpha = Math.min(1, Math.min(t / 0.2, (1 - t) / 0.33)) * (0.28 + e.heat * 0.5);
+        const radius = e.radius * (1 + e.heat * 0.4);
+
+        const glow = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, radius * 5);
+        glow.addColorStop(0, `rgba(255, ${150 + e.heat * 70 | 0}, 70, ${alpha})`);
+        glow.addColorStop(0.4, `rgba(212, 122, 40, ${alpha * 0.35})`);
+        glow.addColorStop(1, 'rgba(140, 70, 20, 0)');
+
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, radius * 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(255, 226, 180, ${alpha * 0.9})`;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, radius * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      frame = requestAnimationFrame(step);
+    }
+
+    function start() {
+      if (live) return;
+      live = true;
+      canvas.classList.add('is-live');
+      lastTime = performance.now();
+      lastScroll = window.scrollY;
+      frame = requestAnimationFrame(step);
+    }
+
+    function stop() {
+      if (!live) return;
+      live = false;
+      canvas.classList.remove('is-live');
+      cancelAnimationFrame(frame);
+      ctx.clearRect(0, 0, width, height);
+    }
+
+    addEventListener('resize', resize, { passive: true });
+
+    new IntersectionObserver(
+      ([entry]) => (entry.isIntersecting ? start() : stop()),
+      { threshold: 0 }
+    ).observe(container);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else if (container.getBoundingClientRect().top < window.innerHeight) start();
+    });
+
+    resize();
+  }
+</script>

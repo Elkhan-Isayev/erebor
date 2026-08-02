@@ -1,0 +1,126 @@
+---
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import MusicToggle from '../components/MusicToggle.astro';
+import { alternates, DEFAULT_LOCALE, LOCALE_META, localePath, type Locale } from '../i18n/config';
+import { t } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  /** Logical path without the locale prefix, e.g. '/' or '/sagas/odysseia'. */
+  path: string;
+  title: string;
+  description: string;
+  /** Dark header floating over a hero — no background until the first scroll. */
+  transparentHeader?: boolean;
+}
+
+const { locale, path, title, description, transparentHeader = false } = Astro.props;
+
+const meta = LOCALE_META[locale];
+const ui = t(locale);
+const canonical = new URL(localePath(locale, path), Astro.site);
+const links = alternates(path);
+---
+
+<!doctype html>
+<html lang={meta.tag} dir={meta.dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#07060a" />
+
+    {
+      links.map((alt) => (
+        <link rel="alternate" hreflang={alt.tag} href={new URL(alt.href, Astro.site)} />
+      ))
+    }
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={new URL(localePath(DEFAULT_LOCALE, path), Astro.site)}
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content={meta.intl.replace('-', '_')} />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307060a'/%3E%3Cpath d='M3 25 L12 6 L17.5 15 L21 10 L29 25 Z' fill='%23d3ae63'/%3E%3C/svg%3E"
+    />
+  </head>
+
+  <body>
+    <a href="#main" class="skip">{ui.skip}</a>
+    <SiteHeader locale={locale} path={path} transparent={transparentHeader} />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter locale={locale} />
+    <MusicToggle locale={locale} />
+
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <script>
+      // Reveal blocks as they enter the viewport.
+      const items = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (reduced || !('IntersectionObserver' in window)) {
+        items.forEach((el) => el.classList.add('is-revealed'));
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('is-revealed');
+              io.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -12% 0px', threshold: 0.05 }
+        );
+        items.forEach((el) => io.observe(el));
+      }
+
+      // The header gains a background once the hero has scrolled away.
+      const header = document.querySelector<HTMLElement>('[data-header]');
+      if (header) {
+        const onScroll = () => {
+          header.classList.toggle('is-solid', window.scrollY > window.innerHeight * 0.6);
+        };
+        onScroll();
+        addEventListener('scroll', onScroll, { passive: true });
+      }
+    </script>
+
+    <style>
+      .skip {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        translate: -50% -120%;
+        z-index: 200;
+        padding: 0.75rem 1.5rem;
+        background: var(--stone);
+        border: 1px solid var(--rule);
+        color: var(--gold);
+        font-family: var(--font-micro);
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        transition: translate 0.3s var(--ease-out);
+      }
+
+      .skip:focus-visible {
+        translate: -50% 0;
+      }
+    </style>
+  </body>
+</html>

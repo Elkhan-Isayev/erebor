@@ -1,0 +1,376 @@
+---
+import { getImage } from 'astro:assets';
+import { render, type CollectionEntry } from 'astro:content';
+import { asset } from '../i18n/config';
+
+interface Props {
+  station: CollectionEntry<'stations'>;
+  /** Anchor for the saga's table of contents; also names the video file. */
+  anchor: string;
+}
+
+const { station, anchor } = Astro.props;
+const { data } = station;
+const { Content } = await render(station);
+
+// The still shows instantly and doubles as the poster until the video lands.
+const poster = await getImage({
+  src: data.image,
+  widths: [1440],
+  format: 'webp',
+  quality: 68,
+});
+
+const video = asset(`/media/stations/${anchor}.mp4`);
+---
+
+<article
+  class="station"
+  id={anchor}
+  data-station
+  data-genus={data.music.genus}
+  data-tonic={data.music.tonic}
+  data-gap={data.music.gap}
+  data-name={data.title}
+>
+  <!-- The scene does not pin: it has to travel up with the text, otherwise
+       the translucent panel would sit over it instead of over the map. -->
+  <div class="station__scene">
+    <video
+      class="station__media"
+      data-video
+      data-src={video}
+      poster={poster.src}
+      muted
+      loop
+      playsinline
+      preload="none"
+      aria-label={data.alt}
+    ></video>
+
+    <div class="station__scrim" aria-hidden="true"></div>
+    <div class="station__blend" aria-hidden="true"></div>
+
+    <div class="station__titles wrap">
+      <p class="station__numeral numeral">{data.numeral}</p>
+      <p class="station__greek greek">{data.greek}</p>
+      <h2 class="display station__title">{data.title}</h2>
+      <p class="station__place">{data.place}</p>
+    </div>
+  </div>
+
+  <div class="station__text">
+    <div class="wrap station__grid">
+      <p class="station__lead" data-reveal>{data.lead}</p>
+
+      <div class="station__prose prose" data-reveal style="--reveal-delay: 100ms">
+        <Content />
+      </div>
+
+      {
+        data.epigraph && (
+          <blockquote class="epigraph" data-reveal>
+            <p>{data.epigraph.text}</p>
+            <cite>{data.epigraph.source}</cite>
+          </blockquote>
+        )
+      }
+    </div>
+  </div>
+</article>
+
+<style>
+  .station {
+    position: relative;
+  }
+
+  /* ── Scene ──────────────────────────────────────────────── */
+
+  .station__scene {
+    position: relative;
+    height: 100svh;
+    overflow: hidden;
+    background: var(--pitch);
+  }
+
+  .station__media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.06);
+  }
+
+  /* One pass over the whole crossing of the viewport: the scene arrives
+     dimmed and pushed back, settles while it is being read, then recedes
+     again as the text panel takes over. Consecutive scenes therefore hand
+     off to each other instead of cutting. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .station__media {
+        animation: scene-pass linear both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+      }
+    }
+  }
+
+  @keyframes scene-pass {
+    0% {
+      transform: scale(1.16);
+      filter: brightness(0.3) saturate(0.7);
+    }
+    32% {
+      transform: scale(1.02);
+      filter: brightness(1) saturate(1);
+    }
+    68% {
+      transform: scale(1.02);
+      filter: brightness(1) saturate(1);
+    }
+    100% {
+      transform: scale(1.14);
+      filter: brightness(0.32) saturate(0.7);
+    }
+  }
+
+  .station__scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--void) 76%, transparent) 0%,
+        transparent 30%,
+        transparent 48%,
+        color-mix(in srgb, var(--void) 92%, transparent) 100%
+      ),
+      linear-gradient(90deg, color-mix(in srgb, var(--void) 52%, transparent), transparent 62%);
+  }
+
+  /* The scene emerges out of the darkness the previous panel left behind. */
+  .station__blend {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 22vh;
+    background: linear-gradient(180deg, var(--void), transparent);
+  }
+
+  .station__titles {
+    position: absolute;
+    inset: auto 0 clamp(4rem, 16vh, 9rem);
+  }
+
+  .station__numeral {
+    margin: 0 0 0.9rem;
+    font-size: clamp(1.1rem, 0.9rem + 0.8vw, 1.6rem);
+    color: var(--gold);
+  }
+
+  .station__greek {
+    margin: 0 0 0.5rem;
+    font-size: clamp(0.85rem, 0.75rem + 0.4vw, 1.05rem);
+    letter-spacing: 0.34em;
+    color: color-mix(in srgb, var(--gold) 78%, var(--bone));
+  }
+
+  .station__title {
+    font-size: var(--step-3);
+    color: var(--bone);
+    max-width: 18ch;
+    text-shadow: 0 0.1em 0.9em rgba(0, 0, 0, 0.7);
+  }
+
+  .station__place {
+    margin: 0.9rem 0 0;
+    font-family: var(--font-micro);
+    font-size: 0.68rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+  }
+
+  :lang(ar) .station__place {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.85rem;
+  }
+
+  /* ── Text riding over the scene ─────────────────────────── */
+
+  /* The panel is translucent so the voyage map shows through it. */
+  .station__text {
+    position: relative;
+    z-index: 2;
+    background: color-mix(in srgb, var(--void) 74%, transparent);
+    padding-block: clamp(3rem, 10vh, 6rem) clamp(4rem, 14vh, 9rem);
+  }
+
+  .station__text::before {
+    content: '';
+    position: absolute;
+    inset: auto 0 100%;
+    height: clamp(3rem, 8vh, 5rem);
+    background: linear-gradient(
+      180deg,
+      transparent,
+      color-mix(in srgb, var(--void) 74%, transparent)
+    );
+    pointer-events: none;
+  }
+
+  .station__grid {
+    display: grid;
+    gap: clamp(1.75rem, 4vh, 2.75rem);
+  }
+
+  .station__lead {
+    margin: 0;
+    max-width: 26ch;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.24;
+    color: var(--gold);
+    text-wrap: balance;
+  }
+
+  .station__prose {
+    font-size: var(--step-0);
+  }
+
+  @media (min-width: 60rem) {
+    .station__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+      gap: clamp(3rem, 6vw, 6rem);
+      align-items: start;
+    }
+
+    .station__lead {
+      position: sticky;
+      top: 22vh;
+    }
+
+    .epigraph {
+      grid-column: 2;
+    }
+  }
+
+  /* ── Epigraph ───────────────────────────────────────────── */
+
+  .epigraph {
+    margin: 0;
+    max-width: var(--measure);
+    padding-inline-start: clamp(1.25rem, 3vw, 2rem);
+    border-inline-start: 1px solid var(--rule);
+  }
+
+  .epigraph p {
+    margin: 0 0 1rem;
+    font-size: var(--step-1);
+    font-style: italic;
+    line-height: 1.62;
+    color: var(--bone);
+    /* The hexameter is broken into lines in the text itself — keep them. */
+    white-space: pre-line;
+    text-wrap: pretty;
+  }
+
+  .epigraph cite {
+    font-family: var(--font-micro);
+    font-size: 0.68rem;
+    font-style: normal;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--bone-faint);
+  }
+
+  :lang(ar) .epigraph cite {
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 0.8rem;
+  }
+</style>
+
+<script>
+  const stations = [...document.querySelectorAll<HTMLElement>('[data-station]')];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (stations.length) {
+    // Video is fetched only once a station is close, otherwise the page would
+    // pull a dozen clips at once.
+    const preloader = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const video = entry.target.querySelector<HTMLVideoElement>('[data-video]');
+          if (video && !video.src && video.dataset.src) {
+            video.src = video.dataset.src;
+          }
+          preloader.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '150% 0px' }
+    );
+
+    // Only the scene on screen plays.
+    const player = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const video = entry.target.querySelector<HTMLVideoElement>('[data-video]');
+          if (!video) continue;
+
+          if (entry.isIntersecting) {
+            video.play().catch(() => {
+              /* autoplay may be refused — the poster stays */
+            });
+          } else {
+            video.pause();
+          }
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (!reduced) {
+      for (const station of stations) {
+        preloader.observe(station);
+        player.observe(station);
+      }
+    }
+
+    // Mode change: the active station is the one nearest the middle of the screen.
+    let active: HTMLElement | null = null;
+
+    const mood = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const station = entry.target as HTMLElement;
+          if (station === active) continue;
+          active = station;
+
+          document.dispatchEvent(
+            new CustomEvent('station:enter', {
+              detail: {
+                genus: station.dataset.genus,
+                tonic: Number(station.dataset.tonic),
+                gap: Number(station.dataset.gap),
+                name: station.dataset.name,
+              },
+            })
+          );
+        }
+      },
+      { rootMargin: '-45% 0px -45% 0px' }
+    );
+
+    for (const station of stations) mood.observe(station);
+
+    // Nothing needs to keep playing once the tab is in the background.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) return;
+      for (const station of stations) {
+        station.querySelector<HTMLVideoElement>('[data-video]')?.pause();
+      }
+    });
+  }
+</script>
