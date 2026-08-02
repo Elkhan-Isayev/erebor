@@ -4,15 +4,30 @@ A collection of stories from antiquity — named after the mountain under
 which the hoard is kept. The first saga is Homer's *Odyssey*:
 ten stations from the ash of Troy to a bowstring drawn in his own hall.
 
+**Live: https://elkhan-isayev.github.io/erebor/**
+
 Built with [Astro](https://astro.build) and content collections, no client
 framework. All the interactivity is a handful of small vanilla TS scripts.
 
 ```sh
 npm install
-npm run dev      # http://localhost:4321
+npm run dev      # http://localhost:4321/erebor/
 npm run build    # → dist/
 npm run preview
 ```
+
+## Deployment
+
+Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds with
+`withastro/action` and publishes to GitHub Pages. Pages is configured with
+GitHub Actions as its build source, not a branch.
+
+It is a **project** site, so everything is served from `/erebor/`. Astro
+rewrites the paths it generates itself, but hand-written absolute paths are
+not touched — those go through `asset()`, `localePath()` and `anchorPath()` in
+`src/i18n/config.ts`, which prepend `import.meta.env.BASE_URL`. Adding a new
+`/media/...` reference directly, without `asset()`, will work locally and 404
+in production.
 
 ## Layout
 
