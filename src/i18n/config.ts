@@ -2,7 +2,7 @@
  * Supported locales. English is the default and is served without a prefix,
  * every other locale lives under /<code>/.
  */
-export const LOCALES = ['en', 'de', 'es', 'fr', 'el', 'uk', 'ru', 'ar'] as const;
+export const LOCALES = ['en', 'de', 'es', 'fr', 'el', 'tr', 'az', 'uk', 'ru', 'ar'] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -24,6 +24,8 @@ export const LOCALE_META: Record<Locale, LocaleMeta> = {
   es: { name: 'Español', dir: 'ltr', tag: 'es', intl: 'es-ES' },
   fr: { name: 'Français', dir: 'ltr', tag: 'fr', intl: 'fr-FR' },
   el: { name: 'Ελληνικά', dir: 'ltr', tag: 'el', intl: 'el-GR' },
+  tr: { name: 'Türkçe', dir: 'ltr', tag: 'tr', intl: 'tr-TR' },
+  az: { name: 'Azərbaycanca', dir: 'ltr', tag: 'az', intl: 'az-AZ' },
   uk: { name: 'Українська', dir: 'ltr', tag: 'uk', intl: 'uk-UA' },
   ru: { name: 'Русский', dir: 'ltr', tag: 'ru', intl: 'ru-RU' },
   ar: { name: 'العربية', dir: 'rtl', tag: 'ar', intl: 'ar' },

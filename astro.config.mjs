@@ -11,7 +11,7 @@ export default defineConfig({
   trailingSlash: 'ignore',
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'de', 'es', 'fr', 'el', 'uk', 'ru', 'ar'],
+    locales: ['en', 'de', 'es', 'fr', 'el', 'tr', 'az', 'uk', 'ru', 'ar'],
     routing: {
       // English is served from the root; every other locale gets a prefix.
       prefixDefaultLocale: false,

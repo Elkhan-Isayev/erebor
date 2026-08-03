@@ -555,6 +555,194 @@ export const UI: Record<Locale, Strings> = {
     },
   },
 
+  /* ── Türkçe ──────────────────────────────────────────────────────────── */
+  tr: {
+    skip: 'İçeriğe geç',
+    nav: { sagas: 'Destanlar', odyssey: 'Odysseia', about: 'Proje hakkında', home: 'Ana sayfa' },
+    brandHome: 'EREBOR — ana sayfa',
+    navAria: 'Ana gezinme',
+    footerNavAria: 'Alt bilgi gezinmesi',
+    lang: { label: 'Dil', aria: 'Dil seçin' },
+    footer: {
+      note: 'Antik anlatılar, anıt olarak değil hikâye olarak anlatıldı.',
+      name: 'Erebor — hazinenin altında saklandığı dağ.',
+      legal:
+        'Görseller ve videolar yapay zekâ ile üretildi. Haritadaki kıyı çizgileri şematiktir.',
+    },
+    quoteCredit: 'Odysseia alıntıları bu baskı için yapılan çeviriyle verilmiştir.',
+    descent: {
+      aria: 'Karanlığa iniş — giriş',
+      loader: 'Meşale yakılıyor',
+      titleLine1: 'Antik çağın',
+      titleLine2: 'hikâyeleri',
+      subtitle: 'Aşağı inin. Burada tek bir ışık var — o da sizin elinizde.',
+      invocation: [
+        'Anlat bana, Muse, o çok yönlü adamı — hani',
+        'kutsal Troya kalesini yıktıktan sonra uzun uzun dolaşan,',
+        'nice insanın kentini gören, aklını öğrenen…',
+      ],
+      invocationCite: 'Homeros, Odysseia I. Bu baskı için yapılan çeviri',
+      warYears: 'yıl savaş.',
+      roadYears: 'yıl eve dönüş yolu.',
+      fleet: 'On iki gemiden biri bile İthaka’ya varmayacak.',
+      sagaFirst: 'Birinci destan',
+      cta: 'İnişe başla',
+      cue: 'aşağı',
+      posterAlt: 'Bir meşale, karanlığa inen antik taş merdiveni aydınlatıyor',
+    },
+    about: {
+      eyebrow: 'Proje hakkında',
+      titleLines: ['Bu hikâyeler üç bin yıl', 'yaşadı. Bizden de', 'sonra yaşayacaklar.'],
+      p1: 'Antik anlatılar bize iki hâlde ulaşıyor: ya çeyrek sayfalık dipnotun altına gömülmüş akademik bir çeviri olarak, ya da okunmaya değer ne varsa çıkarılmış bir çocuk özeti olarak.',
+      p2: '**EREBOR** üçüncü bir yol denemesi. Hikâyeyi bütün olarak alıyor, anıt gibi değil hikâye gibi anlatıyor ve gösteriyoruz — çünkü Yunanlar bu sahneleri görüyordu, bize yalnızca metin kaldı.',
+      principles: [
+        {
+          greek: 'ΣΑΦΗΝΕΙΑ',
+          title: 'Açıklık',
+          text: 'Üç dilde dipnot yok, ders kitabı özeti yok. İlk satırdan tutan bir düzyazı.',
+        },
+        {
+          greek: 'ΑΛΗΘΕΙΑ',
+          title: 'Doğruluk',
+          text: 'Olaylar kaynakları izler: Homeros, Apollonios, tragedya şairleri. Alıntılar künyeli ve bölümüyle verilir.',
+        },
+        {
+          greek: 'ΟΨΙΣ',
+          title: 'Görüntü',
+          text: 'Her durak kendi başına bir plan. Antik çağ burada, ona inananların gördüğü gibi görünüyor.',
+        },
+      ],
+    },
+    catalogue: {
+      eyebrow: 'Derleme',
+      title: 'Destanlar',
+      traditions: 'Gelenekler',
+      pilot: 'Milattan önceki dünyanın gelenekleri. Yunan mitolojisi Odysseia ile açık; diğerleri hazırlanıyor.',
+      note: 'Biri tümüyle açık. Kalanlar hazırlanıyor — acele etmeden, teker teker.',
+      read: (n) => `${n} durak · oku`,
+      soon: 'Hazırlanıyor',
+    },
+    saga: {
+      author: 'Yazar',
+      era: 'Dönem',
+      stations: 'Durak',
+      route: 'Güzergâh',
+      routeAria: 'Yolculuğun durakları',
+      endText:
+        'Yirmi yıl, on iki gemi ve geri dönen tek bir yoldaş yok. Eve yalnız, yol boyunca kalmayı reddeden adam vardı.',
+      endCta: 'Diğer destanlar',
+    },
+    music: {
+      label: 'Kithara',
+      turnOn: 'Kitharayı aç — antik makamda müzik',
+      turnOff: 'Kitharayı kapat',
+    },
+    map: {
+      aria: 'Odysseus’un Truva’dan İthaka’ya yolculuğunu gösteren Akdeniz haritası',
+      note: 'Duraklar geleneksel eşleştirmelere göre yerleştirildi. Homeros bunların neredeyse hiçbirini gerçek coğrafyaya bağlamaz.',
+    },
+    meta: {
+      homeTitle: 'EREBOR — antik çağın hikâyeleri',
+      homeDescription:
+        'Antik anlatılar yeniden. İlk destan Homeros’un Odysseia’sı: Truva’nın külünden kendi salonunda gerilen yaya kadar on durak.',
+      sagaDescription: (s, n) => `${s} Yolculuğun ${n} durağı.`,
+    },
+  },
+
+  /* ── Azərbaycanca ────────────────────────────────────────────────────── */
+  az: {
+    skip: 'Məzmuna keç',
+    nav: { sagas: 'Dastanlar', odyssey: 'Odisseya', about: 'Layihə haqqında', home: 'Ana səhifə' },
+    brandHome: 'EREBOR — ana səhifə',
+    navAria: 'Əsas naviqasiya',
+    footerNavAria: 'Altlıq naviqasiyası',
+    lang: { label: 'Dil', aria: 'Dil seçin' },
+    footer: {
+      note: 'Antik süjetlər abidə kimi yox, hekayə kimi danışılır.',
+      name: 'Erebor — xəzinənin altında saxlandığı dağ.',
+      legal:
+        'Təsvirlər və videolar süni intellektlə yaradılıb. Xəritədəki sahil xətləri sxematikdir.',
+    },
+    quoteCredit: 'Odisseyadan sitatlar bu nəşr üçün edilmiş tərcümədə verilir.',
+    descent: {
+      aria: 'Qaranlığa eniş — giriş',
+      loader: 'Məşəl yandırılır',
+      titleLine1: 'Antik dövrün',
+      titleLine2: 'hekayələri',
+      subtitle: 'Aşağı enin. Burada yalnız bir işıq var — o da sizin əlinizdədir.',
+      invocation: [
+        'Söylə mənə, Muza, o çoxsınaqlı kişidən — o ki,',
+        'müqəddəs Troya qalasını yıxandan sonra uzun-uzadı dolaşdı,',
+        'nə qədər insanın şəhərini gördü, adətini öyrəndi…',
+      ],
+      invocationCite: 'Homer, «Odisseya», I nəğmə. Bu nəşr üçün tərcümə',
+      warYears: 'il müharibə.',
+      roadYears: 'il evə gedən yol.',
+      fleet: 'On iki gəmidən biri də İtakaya çatmayacaq.',
+      sagaFirst: 'Birinci dastan',
+      cta: 'Enişə başla',
+      cue: 'aşağı',
+      posterAlt: 'Məşəl qaranlığa enən qədim daş pilləkəni işıqlandırır',
+    },
+    about: {
+      eyebrow: 'Layihə haqqında',
+      titleLines: ['Bu hekayələr üç min il', 'yaşadı. Bizdən sonra da', 'yaşayacaqlar.'],
+      p1: 'Antik süjetlər bizə iki cür gəlib çatıb: ya dörddəbir səhifəlik şərhin altında basdırılmış akademik tərcümə kimi, ya da oxumağa dəyən hər şeyin çıxarıldığı uşaq təkrarı kimi.',
+      p2: '**EREBOR** üçüncü yolu sınamaqdır. Süjeti bütöv götürür, onu abidə kimi yox, hekayə kimi danışır və göstəririk — çünki yunanlar bu səhnələri görürdü, bizə isə yalnız mətn qaldı.',
+      principles: [
+        {
+          greek: 'ΣΑΦΗΝΕΙΑ',
+          title: 'Aydınlıq',
+          text: 'Üç dildə haşiyələr yox, dərslik təkrarı yox. İlk sətirdən saxlayan canlı mətn.',
+        },
+        {
+          greek: 'ΑΛΗΘΕΙΑ',
+          title: 'Dəqiqlik',
+          text: 'Süjetlər mənbələrə əsaslanır: Homer, Apolloni, faciə şairləri. Sitatların müəllifi və nəğməsi göstərilir.',
+        },
+        {
+          greek: 'ΟΨΙΣ',
+          title: 'Mənzərə',
+          text: 'Hər dayanacaq ayrıca bir kadrdır. Antik dövr burada ona inananların gördüyü kimi görünür.',
+        },
+      ],
+    },
+    catalogue: {
+      eyebrow: 'Toplu',
+      title: 'Dastanlar',
+      traditions: 'Ənənələr',
+      pilot: 'Bizim eradan əvvəlki dünyanın ənənələri. Yunan mifologiyası Odisseya ilə açıqdır; qalanları hazırlanır.',
+      note: 'Biri tam açıqdır. Qalanları hazırlanır — tələsmədən, bir-bir.',
+      read: (n) => `${n} dayanacaq · oxu`,
+      soon: 'Hazırlanır',
+    },
+    saga: {
+      author: 'Müəllif',
+      era: 'Dövr',
+      stations: 'Dayanacaq',
+      route: 'Yol',
+      routeAria: 'Səyahətin dayanacaqları',
+      endText:
+        'İyirmi il, on iki gəmi və geri dönən bir yoldaş belə yox. Evə yalnız bütün yol boyu qalmaqdan imtina edən adam çatdı.',
+      endCta: 'Digər dastanlar',
+    },
+    music: {
+      label: 'Kifara',
+      turnOn: 'Kifaranı işə sal — antik ladda musiqi',
+      turnOff: 'Kifaranı söndür',
+    },
+    map: {
+      aria: 'Odisseyin Troyadan İtakaya yolunu göstərən Aralıq dənizi xəritəsi',
+      note: 'Dayanacaqlar ənənəvi eyniləşdirmələrə görə yerləşdirilib. Homer onların demək olar heç birini real coğrafiyaya bağlamır.',
+    },
+    meta: {
+      homeTitle: 'EREBOR — antik dövrün hekayələri',
+      homeDescription:
+        'Antik süjetlər yenidən danışılır. İlk dastan Homerin «Odisseya»sıdır: Troyanın külündən öz salonunda dartılan yaya qədər on dayanacaq.',
+      sagaDescription: (s, n) => `${s} Səyahətin ${n} dayanacağı.`,
+    },
+  },
+
   /* ── Українська ──────────────────────────────────────────────────────── */
   uk: {
     skip: 'Перейти до змісту',

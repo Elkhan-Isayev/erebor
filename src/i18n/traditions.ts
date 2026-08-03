@@ -86,6 +86,22 @@ export const TRADITION_TEXT: Record<Locale, Record<TraditionId, Text>> = {
     persian: { name: 'Περσικός μύθος', era: '2η–1η χιλιετία π.Χ.', note: 'Η Αβέστα, ο Αχούρα Μάζντα και ο Άνγκρα Μαΐνιου.' },
     chinese: { name: 'Κινεζικός μύθος', era: '1η χιλιετία π.Χ.', note: 'Το Βιβλίο Βουνών και Θαλασσών, ο Γιου ο Μέγας, ο τοξότης Γι.' },
   },
+  tr: {
+    greek: { name: 'Yunan mitolojisi', era: 'MÖ 8.–5. yüzyıl', note: 'Homeros, Hesiodos, Apollonios, tragedya şairleri.' },
+    egyptian: { name: 'Mısır mitolojisi', era: 'MÖ 3.–1. binyıl', note: 'Osiris ile İsis, Ra’nın yolculuğu, Ölüler Kitabı.' },
+    mesopotamian: { name: 'Mezopotamya mitolojisi', era: 'MÖ 3.–2. binyıl', note: 'Gılgamış, Enuma Eliş, İnanna’nın inişi.' },
+    vedic: { name: 'Vedik mitoloji', era: 'MÖ 2.–1. binyıl', note: 'Rigveda, İndra ile Vritra, Mahabharata.' },
+    persian: { name: 'Pers mitolojisi', era: 'MÖ 2.–1. binyıl', note: 'Avesta, Ahura Mazda ile Angra Mainyu.' },
+    chinese: { name: 'Çin mitolojisi', era: 'MÖ 1. binyıl', note: 'Dağlar ve Denizler Kitabı, Büyük Yu, okçu Yi.' },
+  },
+  az: {
+    greek: { name: 'Yunan mifologiyası', era: 'B.e.ə. VIII–V əsrlər', note: 'Homer, Hesiod, Apolloni, faciə şairləri.' },
+    egyptian: { name: 'Misir mifologiyası', era: 'B.e.ə. III–I minilliklər', note: 'Osiris və İsida, Ranın səyahəti, Ölülər Kitabı.' },
+    mesopotamian: { name: 'Mesopotamiya mifologiyası', era: 'B.e.ə. III–II minilliklər', note: 'Gilqameş, «Enuma eliş», İnannanın enişi.' },
+    vedic: { name: 'Veda mifologiyası', era: 'B.e.ə. II–I minilliklər', note: 'Riqveda, İndra və Vritra, «Mahabharata».' },
+    persian: { name: 'Fars mifologiyası', era: 'B.e.ə. II–I minilliklər', note: 'Avesta, Ahura Mazda və Anqra-Mainyu.' },
+    chinese: { name: 'Çin mifologiyası', era: 'B.e.ə. I minillik', note: '«Dağlar və Dənizlər Kitabı», Böyük Yuy, oxatan İ.' },
+  },
   uk: {
     greek: { name: 'Грецький міф', era: 'VIII–V століття до н. е.', note: 'Гомер, Гесіод, Аполлоній, трагіки.' },
     egyptian: { name: 'Єгипетський міф', era: 'III–I тисячоліття до н. е.', note: 'Осіріс та Ісіда, плавання Ра, Книга мертвих.' },
