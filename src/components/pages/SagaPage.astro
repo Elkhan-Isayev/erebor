@@ -5,7 +5,7 @@ import Base from '../../layouts/Base.astro';
 import Station from '../Station.astro';
 import VoyageMap from '../VoyageMap.astro';
 import EmberTrail from '../EmberTrail.astro';
-import { anchorPath, localePath, type Locale } from '../../i18n/config';
+import { anchorPath, asset, localePath, type Locale } from '../../i18n/config';
 import { listStations, sagaSlug, stationAnchor } from '../../i18n/content';
 import { t } from '../../i18n/ui';
 
@@ -20,6 +20,11 @@ const { Content } = await render(saga);
 
 const slug = sagaSlug(saga);
 const stations = await listStations(locale, slug);
+
+// The title card carries the first station's clip, so the saga is already in
+// motion when the page opens instead of waiting for the first scroll. The
+// still underneath stays as the first paint and as the fallback.
+const heroVideo = stations.length ? asset(`/media/stations/${stationAnchor(stations[0])}.mp4`) : null;
 ---
 
 <Base
@@ -44,6 +49,21 @@ const stations = await listStations(locale, slug);
           loading="eager"
           quality={74}
         />
+      )
+    }
+    {
+      heroVideo && (
+        <video
+          class="saga-hero__video"
+          data-hero-video
+          src={heroVideo}
+          muted
+          loop
+          playsinline
+          autoplay
+          preload="auto"
+          aria-hidden="true"
+        ></video>
       )
     }
     <div class="saga-hero__scrim" aria-hidden="true"></div>
@@ -117,6 +137,34 @@ const stations = await listStations(locale, slug);
   </section>
 
   <script>
+    // The title card plays from the moment the page opens.
+    const hero = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+
+    if (hero && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      hero.addEventListener('playing', () => hero.classList.add('is-running'), { once: true });
+
+      let onScreen = true;
+
+      // Safari and iOS ignore the autoplay attribute often enough to ask again.
+      const start = () => {
+        if (!onScreen || document.hidden) return;
+        hero.play().catch(() => {
+          /* refused — the still underneath stays */
+        });
+      };
+
+      start();
+      document.addEventListener('visibilitychange', () => (document.hidden ? hero.pause() : start()));
+
+      // Nothing to gain from decoding it once the card is off screen.
+      new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          onScreen = entry.isIntersecting;
+          onScreen ? start() : hero.pause();
+        }
+      }).observe(hero);
+    }
+
     // Reading progress along the top of the page.
     const bar = document.querySelector<HTMLElement>('[data-progress]');
     if (bar) {
@@ -177,6 +225,29 @@ const stations = await listStations(locale, slug);
     height: 100%;
     object-fit: cover;
     transform: scale(1.06);
+  }
+
+  /* Sits on the still and fades in once it is actually playing, so a refused
+     autoplay or a slow clip simply leaves the photograph in place. */
+  .saga-hero__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.06);
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+
+  .saga-hero__video.is-running {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .saga-hero__video {
+      display: none;
+    }
   }
 
   .saga-hero__scrim {
