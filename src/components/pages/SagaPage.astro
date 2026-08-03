@@ -1,4 +1,5 @@
 ---
+import { existsSync } from 'node:fs';
 import { Image } from 'astro:assets';
 import { render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
@@ -21,10 +22,16 @@ const { Content } = await render(saga);
 const slug = sagaSlug(saga);
 const stations = await listStations(locale, slug);
 
-// The title card carries the first station's clip, so the saga is already in
-// motion when the page opens instead of waiting for the first scroll. The
-// still underneath stays as the first paint and as the fallback.
-const heroVideo = stations.length ? asset(`/media/stations/${stationAnchor(stations[0])}.mp4`) : null;
+// The title card is already in motion when the page opens instead of waiting
+// for the first scroll. It gets its own clip so the card and the first station
+// are not the same picture twice; a saga without one falls back to station I.
+// The still underneath stays as the first paint and as the fallback.
+const ownClip = `/media/sagas/${slug}.mp4`;
+const heroVideo = existsSync(`public${ownClip}`)
+  ? asset(ownClip)
+  : stations.length
+    ? asset(`/media/stations/${stationAnchor(stations[0])}.mp4`)
+    : null;
 ---
 
 <Base

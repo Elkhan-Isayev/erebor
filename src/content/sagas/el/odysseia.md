@@ -8,7 +8,7 @@ author: Όμηρος
 era: 8ος αιώνας π.Χ.
 order: 1
 published: true
-cover: ../../../assets/art/01-troy.webp
+cover: ../../../assets/art/hero-bow.webp
 accent: '#d3ae63'
 ---
 

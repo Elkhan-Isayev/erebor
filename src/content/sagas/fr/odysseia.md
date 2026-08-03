@@ -8,7 +8,7 @@ author: Homère
 era: VIIIe siècle av. J.-C.
 order: 1
 published: true
-cover: ../../../assets/art/01-troy.webp
+cover: ../../../assets/art/hero-bow.webp
 accent: '#d3ae63'
 ---
 
